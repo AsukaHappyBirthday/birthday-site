@@ -52,16 +52,21 @@
       transform: scale(1.05);
     }
 
-    /* ===== 氣球動畫 ===== */
+    /* ===== 氣球動畫 (初始隱藏) ===== */
     .balloon {
       position: absolute;
       bottom: -150px;
       width: 60px;
       height: 80px;
       border-radius: 50%;
-      background: pink;
-      opacity: 0.8;
-      animation: floatUp 6s ease-in infinite;
+      opacity: 0; /* 初始隱藏 */
+      transition: opacity 1s ease-in; /* 讓氣球淡入 */
+    }
+    
+    /* 氣球啟動後，淡入顯示 */
+    .balloon.active {
+        opacity: 0.8;
+        animation: floatUp 6s ease-in infinite;
     }
 
     .balloon::after {
@@ -153,7 +158,7 @@
       transition: all 1s ease;
       max-width: 600px;
       margin: 20px auto 0;
-      min-height: 150px; /* 防止高度塌陷 */
+      min-height: 150px;
     }
     #letter.visible {
       opacity: 1;
@@ -171,12 +176,23 @@
       display: none;
     }
 
-    /* Google Form Iframe 樣式 */
-    iframe {
-      width: 100%;
-      height: 600px;
+    /* 留言板按鈕樣式 */
+    .message-button {
+      display: inline-block;
+      margin-top: 20px;
+      background: #e85a70;
+      color: #fff;
       border: none;
+      padding: 10px 20px;
       border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      text-decoration: none; /* 移除下劃線 */
+      transition: background 0.3s;
+    }
+
+    .message-button:hover {
+      background: #f17888;
     }
   </style>
 </head>
@@ -216,8 +232,12 @@
 
     <section>
       <h2>メッセージボード 💬</h2>
-      <p>ここに一言メッセージを書いてね！</p>
-      <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSc1X7jtuygt1koikHYoizP26mBZYEhU4tIdjduRZwZsmxRr5w/viewform?embedded=true" title="Google Form">読み込み中...</iframe>
+      <p>メッセージは下のボタンから送ってね！</p>
+      <a href="https://docs.google.com/forms/d/1iHgAsxYTHLH4lZEIaJbK48qq3uAxbiqxMoBAsUPMePY/viewform" 
+         target="_blank" 
+         class="message-button">
+        メッセージを送る 🎁
+      </a>
     </section>
 
     <footer>
@@ -226,12 +246,13 @@
   </div>
 
   <script>
-    // ========== Intro & Confetti 动画 ==========
+    // ========== Intro & Confetti & Balloon 动画 ==========
     const intro = document.getElementById('intro');
     const main = document.getElementById('main');
     const btn = document.getElementById('enter-btn');
+    const balloons = []; // 用于存放气球元素
 
-    // 随机气球背景
+    // 随机气球的创建 (初始不激活)
     for(let i=0;i<15;i++){
       const b = document.createElement('div');
       b.classList.add('balloon');
@@ -240,28 +261,22 @@
       b.style.animationDelay = Math.random()*3+'s';
       b.style.width = 40+Math.random()*40+'px';
       document.body.appendChild(b);
+      balloons.push(b); // 存入数组
     }
 
-    // 點擊按鈕觸發：彩帶特效 + 進入主頁
+    // 點擊按鈕觸發：彩帶特效 -> 進入主頁 -> 氣球浮現
     btn.addEventListener('click', ()=>{
-      // 1. 播放彩帶禮炮
-      var duration = 3 * 1000;
+      // 1. 播放彩帶禮炮 (持續約 3 秒)
+      var duration = 3000;
       var animationEnd = Date.now() + duration;
       var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 99999 };
 
-      function randomInOut(min, max) {
-        return Math.random() * (max - min) + min;
-      }
+      function randomInOut(min, max) { return Math.random() * (max - min) + min; }
 
       var interval = setInterval(function() {
         var timeLeft = animationEnd - Date.now();
-
-        if (timeLeft <= 0) {
-          return clearInterval(interval);
-        }
-
+        if (timeLeft <= 0) { return clearInterval(interval); }
         var particleCount = 50 * (timeLeft / duration);
-        // 隨機從左右兩邊噴射
         confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInOut(0.1, 0.3), y: Math.random() - 0.2 } }));
         confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInOut(0.7, 0.9), y: Math.random() - 0.2 } }));
       }, 250);
@@ -272,26 +287,31 @@
         intro.style.display = 'none';
         main.style.display = 'block';
       }, 1000);
+
+      // 3. 延遲 3.5 秒 (彩帶結束後) 讓氣球開始漂浮
+      setTimeout(() => {
+          balloons.forEach(b => {
+              b.classList.add('active'); // 添加 active class 啟動動畫和 opacity
+          });
+      }, 3500); // 3.5 秒延遲
     });
 
     // ========== 信件打字機動畫 ==========
     
-    // 這裡定義你的信件內容 (支援 <br> 換行)
     const letterContent = `今日はあすかの特別な日だね。<br>
     はじめて「お誕生日おめでとう」って言うね。<br>
     これからの日々が、少しずつでもあたたかくて優しいものになりますように。<br>
     これからも一緒に笑って、楽しい毎日を過ごそう!🥳`;
 
-    let isTyping = false; // 防止重複觸發
+    let isTyping = false;
 
     function typeWriter(text, elementId, speed = 80) {
       const element = document.getElementById(elementId);
       let i = 0;
-      element.innerHTML = ""; // 清空
+      element.innerHTML = "";
 
       function type() {
         if (i < text.length) {
-          // 如果遇到 <br> 標籤，一次性寫入
           if (text.substring(i, i+4) === "<br>") {
             element.innerHTML += "<br>";
             i += 4;
@@ -301,7 +321,6 @@
           }
           setTimeout(type, speed);
         } else {
-          // 打字結束，移除光標效果
           element.classList.remove("typing-cursor");
         }
       }
@@ -312,7 +331,6 @@
       const envelope = document.getElementById('envelope');
       const letter = document.getElementById('letter');
       
-      // 如果已經打開過，就不再重複動畫
       if(isTyping) return;
       isTyping = true;
 
@@ -323,7 +341,6 @@
         letter.classList.remove('hidden');
         setTimeout(() => letter.classList.add('visible'), 50);
         
-        // 開始打字機效果
         typeWriter(letterContent, 'typewriter-text', 100); 
       }, 800); 
     }
