@@ -97,14 +97,10 @@
       border-radius: 16px;
       padding: 30px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      /* 翻頁機制：默認隱藏除了第一個區塊外的所有頁面 */
+      /* 默認隱藏，由 JS 決定哪個顯示 */
       display: none; 
     }
-    /* 確保第一個區塊在主頁面載入時顯示 */
-    #main section:first-child {
-        display: block;
-    }
-
+    /* 已移除 CSS: #main section:first-child { display: block; }，改由 JS 處理 */
 
     h1 {
       font-size: 2.2rem;
@@ -146,7 +142,7 @@
     #envelope:hover {
       background: #f79cab;
     }
-    /* ... (其他信件樣式不變) ... */
+    
     #letter.visible {
       opacity: 1;
       transform: translateY(0);
@@ -263,13 +259,13 @@
     const main = document.getElementById('main');
     const btn = document.getElementById('enter-btn');
     const balloons = [];
+    // 獲取所有內容區塊
     const sections = document.querySelectorAll('#main section');
     const audio = document.getElementById('background-music');
     let isTyping = false;
 
-    // ========== 音樂控制函式 ==========
+    // ========== 音樂控制函式 (保持不變) ==========
 
-    // 更新所有音樂按鈕的狀態顯示
     function updateMusicButtonDisplay() {
         const isPlaying = !audio.paused;
         const buttonTexts = document.querySelectorAll('.music-btn');
@@ -277,18 +273,16 @@
         buttonTexts.forEach(btn => {
             if (isPlaying) {
                 btn.innerHTML = '⏸️ 音楽を一時停止';
-                btn.style.background = '#F44336'; // 暫停時顯示紅色
+                btn.style.background = '#F44336'; 
             } else {
                 btn.innerHTML = '🎵 音楽を再生';
-                btn.style.background = '#4CAF50'; // 播放時顯示綠色
+                btn.style.background = '#4CAF50'; 
             }
         });
     }
 
-    // 切換音樂播放狀態
     function toggleMusic() {
         if (audio.paused) {
-            // 由於瀏覽器限制，通常需要用戶主動操作才能開始播放
             audio.play().catch(error => {
                 console.error("Audio playback failed:", error);
                 alert("音聲の自動再生はブロックされました。画面を操作した後、もう一度再生ボタンを押してください。");
@@ -299,27 +293,25 @@
         updateMusicButtonDisplay();
     }
     
-    // 監聽音樂狀態變化，確保所有按鈕同步更新
     audio.addEventListener('play', updateMusicButtonDisplay);
     audio.addEventListener('pause', updateMusicButtonDisplay);
 
 
-    // ========== 翻頁邏輯 ==========
+    // ========== 翻頁邏輯 (驗證正確) ==========
 
     function nextPage(currentIndex) {
         // 隱藏當前頁面 (索引 = 頁碼 - 1)
         sections[currentIndex - 1].style.display = 'none';
         
-        // 顯示下一頁
+        // 顯示下一頁 (索引 = 頁碼)
         const nextIndex = currentIndex;
         if (nextIndex < sections.length) {
             sections[nextIndex].style.display = 'block';
-            // 平滑捲動到新的區塊頂部
             sections[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
 
-    // ========== Intro & Confetti & Balloon 动画 ==========
+    // ========== Intro & Confetti & Balloon 动画 (修正啟動時的顯示問題) ==========
     
     // 随机气球的创建
     for(let i=0;i<15;i++){
@@ -330,11 +322,10 @@
       b.style.animationDelay = Math.random()*3+'s';
       b.style.width = 40+Math.random()*40+'px';
       document.body.appendChild(b);
-      // 氣球陣列用於後續控制
       balloons.push(b); 
     }
 
-    // 點擊按鈕觸發：彩帶特效 -> 進入主頁 -> 氣球浮現
+    // 點擊按鈕觸發
     btn.addEventListener('click', ()=>{
       // 1. 播放彩帶禮炮
       var duration = 3000;
@@ -356,6 +347,11 @@
       setTimeout(()=>{
         intro.style.display = 'none';
         main.style.display = 'block';
+        
+        // **修正點:** 確保第一個區塊（索引 0）是可見的，解決網頁內容為空的問題
+        if (sections.length > 0) {
+            sections[0].style.display = 'block';
+        }
       }, 1000);
 
       // 3. 延遲 3.5 秒 (彩帶結束後) 讓氣球開始漂浮
@@ -367,7 +363,7 @@
     });
 
 
-    // ========== 信件打字機動畫 ==========
+    // ========== 信件打字機動畫 (保持不變) ==========
     
     const letterContent = `今日はあすかの特別な日だね。<br>
     はじめて「お誕生日おめでとう」って言うね。<br>
@@ -393,7 +389,6 @@
           setTimeout(type, speed);
         } else {
           element.classList.remove("typing-cursor");
-          // 打字機結束時，顯示下一步按鈕
           nextBtnAfterLetter.classList.remove('hidden'); 
         }
       }
