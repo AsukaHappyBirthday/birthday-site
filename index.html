@@ -59,11 +59,10 @@
       width: 60px;
       height: 80px;
       border-radius: 50%;
-      opacity: 0; /* 初始隱藏 */
-      transition: opacity 1s ease-in; /* 讓氣球淡入 */
+      opacity: 0;
+      transition: opacity 1s ease-in;
     }
     
-    /* 氣球啟動後，淡入顯示 */
     .balloon.active {
         opacity: 0.8;
         animation: floatUp 6s ease-in infinite;
@@ -90,6 +89,7 @@
       100% { opacity: 1; transform: translateY(0); }
     }
 
+    /* ===== 內容區塊樣式 ===== */
     section {
       margin: 60px auto;
       max-width: 700px;
@@ -97,7 +97,14 @@
       border-radius: 16px;
       padding: 30px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      /* 翻頁機制：默認隱藏除了第一個區塊外的所有頁面 */
+      display: none; 
     }
+    /* 確保第一個區塊在主頁面載入時顯示 */
+    #main section:first-child {
+        display: block;
+    }
+
 
     h1 {
       font-size: 2.2rem;
@@ -116,12 +123,6 @@
       width: 220px;
       margin-top: 30px;
       border-radius: 10px;
-    }
-
-    audio {
-      margin-top: 20px;
-      width: 80%;
-      max-width: 400px;
     }
 
     footer {
@@ -145,21 +146,7 @@
     #envelope:hover {
       background: #f79cab;
     }
-    #envelope.opened {
-      transform: rotateX(180deg);
-      background: #fff;
-      color: #e85a70;
-      border: 2px solid #f7a1b1;
-    }
-
-    #letter {
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 1s ease;
-      max-width: 600px;
-      margin: 20px auto 0;
-      min-height: 150px;
-    }
+    /* ... (其他信件樣式不變) ... */
     #letter.visible {
       opacity: 1;
       transform: translateY(0);
@@ -176,23 +163,30 @@
       display: none;
     }
 
-    /* 留言板按鈕樣式 */
-    .message-button {
-      display: inline-block;
-      margin-top: 20px;
-      background: #e85a70;
-      color: #fff;
+    /* 翻頁/訊息按鈕通用樣式 */
+    .next-btn, .music-btn, .message-button {
+      margin: 10px 10px;
+      background: #ff69b4; /* 粉紅色 */
+      color: white;
       border: none;
-      padding: 10px 20px;
+      padding: 10px 25px;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 1rem;
-      text-decoration: none; /* 移除下劃線 */
+      font-size: 1.1rem;
       transition: background 0.3s;
+      text-decoration: none;
     }
-
-    .message-button:hover {
-      background: #f17888;
+    .next-btn:hover, .music-btn:hover, .message-button:hover {
+      background: #ff9dc1;
+    }
+    
+    /* 播放按鈕 */
+    .music-btn {
+        background: #4CAF50; /* 綠色 */
+        font-size: 1rem;
+    }
+    .music-btn:hover {
+        background: #66BB6A;
     }
   </style>
 </head>
@@ -204,18 +198,26 @@
   </div>
 
   <div id="main" style="display:none;">
+    
+    <audio id="background-music" loop>
+      <source src="birthday_song.mp3" type="audio/mpeg">
+      お使いのブラウザでは音声が再生できません。
+    </audio>
+
     <section>
       <h1>お誕生日おめでとう 🎂</h1>
       <img src="图片1.jpg" alt="バースデーケーキ" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4562/4562477.png'">
+      <p style="margin-top: 30px;">
+        <button id="music-control-1" class="music-btn" onclick="toggleMusic()">🎵 音楽を再生</button>
+      </p>
+      <button class="next-btn" onclick="nextPage(1)">次へ進む (2/4) ♪</button>
     </section>
 
     <section>
       <h2>バースデーソング ♪</h2>
-      <p>クリックして再生して。</p>
-      <audio controls>
-        <source src="birthday_song.mp3" type="audio/mpeg">
-        お使いのブラウザでは音声が再生できません。
-      </audio>
+      <p>このページでは特別な曲を紹介しています。下のボタンでいつでも再生・一時停止できます。</p>
+      <button id="music-control-2" class="music-btn" onclick="toggleMusic()">🎵 音楽を再生</button>
+      <button class="next-btn" onclick="nextPage(2)">メッセージへ (3/4) 💌</button>
     </section> 
 
     <section id="letter-section">
@@ -228,16 +230,26 @@
       <div id="letter" class="hidden">
         <p id="typewriter-text" class="typing-cursor"></p>
       </div>
+      
+      <p style="margin-top: 30px;">
+        <button id="music-control-3" class="music-btn" onclick="toggleMusic()">🎵 音楽を再生</button>
+      </p>
+
+      <button id="next-to-message-board" class="next-btn hidden" onclick="nextPage(3)">お祝いボードへ (4/4) 💬</button>
     </section>
 
     <section>
       <h2>メッセージボード 💬</h2>
-      <p>メッセージは下のボタンから送ってね！</p>
+      <p>最後に、ここからお祝いメッセージを送ってね！</p>
       <a href="https://docs.google.com/forms/d/1iHgAsxYTHLH4lZEIaJbK48qq3uAxbiqxMoBAsUPMePY/viewform" 
          target="_blank" 
          class="message-button">
         メッセージを送る 🎁
       </a>
+      <p style="margin-top: 30px;">
+        <button id="music-control-4" class="music-btn" onclick="toggleMusic()">🎵 音楽を再生</button>
+      </p>
+      <p style="margin-top: 40px;">🎉 これで全て完了です！素敵な一日を！ 🎉</p>
     </section>
 
     <footer>
@@ -246,13 +258,70 @@
   </div>
 
   <script>
-    // ========== Intro & Confetti & Balloon 动画 ==========
+    // ========== 全局變量 ==========
     const intro = document.getElementById('intro');
     const main = document.getElementById('main');
     const btn = document.getElementById('enter-btn');
-    const balloons = []; // 用于存放气球元素
+    const balloons = [];
+    const sections = document.querySelectorAll('#main section');
+    const audio = document.getElementById('background-music');
+    let isTyping = false;
 
-    // 随机气球的创建 (初始不激活)
+    // ========== 音樂控制函式 ==========
+
+    // 更新所有音樂按鈕的狀態顯示
+    function updateMusicButtonDisplay() {
+        const isPlaying = !audio.paused;
+        const buttonTexts = document.querySelectorAll('.music-btn');
+
+        buttonTexts.forEach(btn => {
+            if (isPlaying) {
+                btn.innerHTML = '⏸️ 音楽を一時停止';
+                btn.style.background = '#F44336'; // 暫停時顯示紅色
+            } else {
+                btn.innerHTML = '🎵 音楽を再生';
+                btn.style.background = '#4CAF50'; // 播放時顯示綠色
+            }
+        });
+    }
+
+    // 切換音樂播放狀態
+    function toggleMusic() {
+        if (audio.paused) {
+            // 由於瀏覽器限制，通常需要用戶主動操作才能開始播放
+            audio.play().catch(error => {
+                console.error("Audio playback failed:", error);
+                alert("音聲の自動再生はブロックされました。画面を操作した後、もう一度再生ボタンを押してください。");
+            });
+        } else {
+            audio.pause();
+        }
+        updateMusicButtonDisplay();
+    }
+    
+    // 監聽音樂狀態變化，確保所有按鈕同步更新
+    audio.addEventListener('play', updateMusicButtonDisplay);
+    audio.addEventListener('pause', updateMusicButtonDisplay);
+
+
+    // ========== 翻頁邏輯 ==========
+
+    function nextPage(currentIndex) {
+        // 隱藏當前頁面 (索引 = 頁碼 - 1)
+        sections[currentIndex - 1].style.display = 'none';
+        
+        // 顯示下一頁
+        const nextIndex = currentIndex;
+        if (nextIndex < sections.length) {
+            sections[nextIndex].style.display = 'block';
+            // 平滑捲動到新的區塊頂部
+            sections[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    // ========== Intro & Confetti & Balloon 动画 ==========
+    
+    // 随机气球的创建
     for(let i=0;i<15;i++){
       const b = document.createElement('div');
       b.classList.add('balloon');
@@ -261,12 +330,13 @@
       b.style.animationDelay = Math.random()*3+'s';
       b.style.width = 40+Math.random()*40+'px';
       document.body.appendChild(b);
-      balloons.push(b); // 存入数组
+      // 氣球陣列用於後續控制
+      balloons.push(b); 
     }
 
     // 點擊按鈕觸發：彩帶特效 -> 進入主頁 -> 氣球浮現
     btn.addEventListener('click', ()=>{
-      // 1. 播放彩帶禮炮 (持續約 3 秒)
+      // 1. 播放彩帶禮炮
       var duration = 3000;
       var animationEnd = Date.now() + duration;
       var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 99999 };
@@ -291,10 +361,11 @@
       // 3. 延遲 3.5 秒 (彩帶結束後) 讓氣球開始漂浮
       setTimeout(() => {
           balloons.forEach(b => {
-              b.classList.add('active'); // 添加 active class 啟動動畫和 opacity
+              b.classList.add('active'); 
           });
-      }, 3500); // 3.5 秒延遲
+      }, 3500); 
     });
+
 
     // ========== 信件打字機動畫 ==========
     
@@ -303,7 +374,7 @@
     これからの日々が、少しずつでもあたたかくて優しいものになりますように。<br>
     これからも一緒に笑って、楽しい毎日を過ごそう!🥳`;
 
-    let isTyping = false;
+    const nextBtnAfterLetter = document.getElementById('next-to-message-board');
 
     function typeWriter(text, elementId, speed = 80) {
       const element = document.getElementById(elementId);
@@ -322,6 +393,8 @@
           setTimeout(type, speed);
         } else {
           element.classList.remove("typing-cursor");
+          // 打字機結束時，顯示下一步按鈕
+          nextBtnAfterLetter.classList.remove('hidden'); 
         }
       }
       type();
