@@ -97,11 +97,9 @@
       border-radius: 16px;
       padding: 30px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      /* 默認隱藏，由 JS 決定哪個顯示 */
       display: none; 
     }
-    /* 已移除 CSS: #main section:first-child { display: block; }，改由 JS 處理 */
-
+    
     h1 {
       font-size: 2.2rem;
       margin-top: 60px;
@@ -162,7 +160,7 @@
     /* 翻頁/訊息按鈕通用樣式 */
     .next-btn, .music-btn, .message-button {
       margin: 10px 10px;
-      background: #ff69b4; /* 粉紅色 */
+      background: #ff69b4; 
       color: white;
       border: none;
       padding: 10px 25px;
@@ -178,7 +176,7 @@
     
     /* 播放按鈕 */
     .music-btn {
-        background: #4CAF50; /* 綠色 */
+        background: #4CAF50; 
         font-size: 1rem;
     }
     .music-btn:hover {
@@ -201,12 +199,12 @@
     </audio>
 
     <section>
-      <h1>お誕生日おめでとう 🎂</h1>
+      <h1>お誕生日おめでとう！ 🎂</h1>
       <img src="图片1.jpg" alt="バースデーケーキ" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4562/4562477.png'">
       <p style="margin-top: 30px;">
         <button id="music-control-1" class="music-btn" onclick="toggleMusic()">🎵 音楽を再生</button>
       </p>
-      <button class="next-btn" onclick="nextPage(1)">次へ進む (2/4) ♪</button>
+      <button class="next-btn" onclick="nextPage(1)">メッセージへ (2/3) 💌</button>
     </section>
 
     <section id="letter-section">
@@ -221,22 +219,22 @@
       </div>
       
       <p style="margin-top: 30px;">
-        <button id="music-control-3" class="music-btn" onclick="toggleMusic()">🎵 音楽を再生</button>
+        <button id="music-control-2" class="music-btn" onclick="toggleMusic()">🎵 音楽を再生</button>
       </p>
 
-      <button id="next-to-message-board" class="next-btn hidden" onclick="nextPage(3)">お祝いボードへ (4/4) 💬</button>
+      <button id="next-to-message-board" class="next-btn hidden" onclick="nextPage(2)">お祝いボードへ (3/3) 💬</button>
     </section>
 
     <section>
       <h2>メッセージボード 💬</h2>
-      <p>良かったら、ここに一言メッセージを書いてね！</p>
+      <p>良かったら、ここに一言メッセージを書いてね✨！</p>
       <a href="https://docs.google.com/forms/d/1iHgAsxYTHLH4lZEIaJbK48qq3uAxbiqxMoBAsUPMePY/viewform" 
          target="_blank" 
          class="message-button">
         メッセージを送る 🎁
       </a>
       <p style="margin-top: 30px;">
-        <button id="music-control-4" class="music-btn" onclick="toggleMusic()">🎵 音楽を再生</button>
+        <button id="music-control-3" class="music-btn" onclick="toggleMusic()">🎵 音楽を再生</button>
       </p>
       <p style="margin-top: 40px;">🎉 全て完了！素敵な一日を！ 🎉</p>
     </section>
@@ -257,10 +255,11 @@
     const audio = document.getElementById('background-music');
     let isTyping = false;
 
-    // ========== 音樂控制函式 (保持不變) ==========
+    // ========== 音樂控制函式 ==========
 
     function updateMusicButtonDisplay() {
         const isPlaying = !audio.paused;
+        // 注意：按鈕 ID 數量減少，但 class 保持 .music-btn，依然能正確遍歷。
         const buttonTexts = document.querySelectorAll('.music-btn');
 
         buttonTexts.forEach(btn => {
@@ -278,7 +277,7 @@
         if (audio.paused) {
             audio.play().catch(error => {
                 console.error("Audio playback failed:", error);
-                alert("音聲の自動再生はブロックされました。画面を操作した後、もう一度再生ボタンを押してください。");
+                alert("音聲の自動再生はブロックされた。画面を操作した後、もう一度再生ボタンを押してください。");
             });
         } else {
             audio.pause();
@@ -290,7 +289,7 @@
     audio.addEventListener('pause', updateMusicButtonDisplay);
 
 
-    // ========== 翻頁邏輯 (驗證正確) ==========
+    // ========== 翻頁邏輯 (保持不變) ==========
 
     function nextPage(currentIndex) {
         // 隱藏當前頁面 (索引 = 頁碼 - 1)
@@ -304,7 +303,7 @@
         }
     }
 
-    // ========== Intro & Confetti & Balloon 动画 (修正啟動時的顯示問題) ==========
+    // ========== Intro & Confetti & Balloon 动画 ==========
     
     // 随机气球的创建
     for(let i=0;i<15;i++){
@@ -341,7 +340,7 @@
         intro.style.display = 'none';
         main.style.display = 'block';
         
-        // **修正點:** 確保第一個區塊（索引 0）是可見的，解決網頁內容為空的問題
+        // 確保第一個區塊（索引 0）是可見的
         if (sections.length > 0) {
             sections[0].style.display = 'block';
         }
@@ -356,11 +355,11 @@
     });
 
 
-    // ========== 信件打字機動畫 (保持不變) ==========
+    // ========== 信件打字機動畫 ==========
     
     const letterContent = `今日はあすかの特別な日だね。<br>
     はじめて「お誕生日おめでとう」って言うね。<br>
-    これからの日々が、少しずつでもあたたかくて優しいものになりますように。<br>
+    これからの日々が、少しずつでもあたたかくて優しいものになるように。<br>
     これからも一緒に笑って、楽しい毎日を過ごそう!🥳`;
 
     const nextBtnAfterLetter = document.getElementById('next-to-message-board');
